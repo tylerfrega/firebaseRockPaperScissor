@@ -14,6 +14,7 @@
   var ref = database.ref('players');
   var numberOfPlayers = 0;
   var ties = 0;
+  var numberOfPicks = 0;
 
      var playerOne = {
         
@@ -31,8 +32,6 @@
         choice: ''
     };
 
-
-
  $('#submit').on('click', function(){
 
 
@@ -40,7 +39,6 @@
       playerOne.name = name = $('.input').val().trim();
 
       ref.set({
-
         playerOne: playerOne
       });
      // $('#playerOneDiv').html('player one: ' + playerOne.name)
@@ -77,43 +75,90 @@
 
 
 ref.on('value', function(snapshot){
-  console.log(snapshot.val().playerOne)
+
   
 if(snapshot.child('playerOne').exists() && snapshot.child('playerTwo').exists()){
 
   $('#playerOneName').html('Player 1: ' + snapshot.val().playerOne.name);
-  $('#playerOneScore').html('Player 1 wins: ' + snapshot.val().playerOne.wins + ' player 1 losses ' + snapshot.val().playerOne.losses );
+  $('#playerOneScore').html('wins: ' + snapshot.val().playerOne.wins + '  losses: ' + snapshot.val().playerOne.losses );
 
   $('#playerTwoName').html('Player 2: ' + snapshot.val().playerTwo.name);
-  $('#playerTwoScore').html('Player 2 wins: ' + snapshot.val().playerTwo.wins + ' player 2 losses ' + snapshot.val().playerTwo.losses );
+  $('#playerTwoScore').html('wins: ' + snapshot.val().playerTwo.wins + ' losses ' + snapshot.val().playerTwo.losses );
+ 
+  $('#playerOneChoice').html('Pick ' + snapshot.val().playerOne.choice);
+  $('#playerTwoChoice').html('Pick ' + snapshot.val().playerTwo.choice);
 
 }
-if(snapshot.val().playerOne.choice === 'r'){
-  console.log('tits');
-}
-})
 
-$('#win').on('click', function(){
-  playerOne.choice = 'r';
-  ref.set({
-    playerOne:playerOne,
-    playerTwo: playerTwo
 
-  })
-})
+
 
 var rock = $('#rock');
 var paper = $('#paper');
 var scissor = $('#scissor');
 
-$('butt')
 
+$('#rock').on('click', makePicks);
+$('#paper').on('click', makePicks);
+$('#scissor').on('click', makePicks);
+
+
+});
+
+function makePicks(){
+
+  if(numberOfPicks === 0){
+     playerOne.choice = $(this).val();
+
+     database.ref('players/playerOne').update({
+      choice: playerOne.choice
+
+    });
+
+    numberOfPicks++;
+
+  }else if(numberOfPicks === 1){
+    playerTwo.choice = $(this).val();
+
+    database.ref('players/playerTwo').update({
+      choice: playerTwo.choice
+
+    });
+    numberOfPicks++;
+
+    if(numberOfPicks === 2){
+      game();
+      updateScores();
+      
+    }
+
+  }
+
+}
+
+function updateScores(){
+  database.ref('players/playerOne').update({
+        choice: '',
+        wins: playerOne.wins,
+        losses:playerOne.losses,
+
+      });
+      database.ref('players/playerTwo').update({
+        choice: '',
+        wins: playerTwo.wins,
+        losses:playerTwo.losses
+      });
+}
+
+
+
+console.log(numberOfPicks);
 
 
 
 //game logic
-
-
+ function game(){
+  console.log('it ran');
     if ((playerOne.choice === "r") && (playerTwo.choice === "p")){
           playerTwo.wins++;
         }
@@ -134,4 +179,34 @@ $('butt')
         }
         else if (playerOne.choice === playerTwo.choice){
           ties++;
+          $('#ties').html('Ties: ' + ties);
         }
+        
+      };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
